@@ -12,6 +12,22 @@ and only carry facts (gate commands, seeds, red lines) in their own agent docs.
 | `skills/paseo-dev-loop` | The execution pipeline for any agreed coded change: entry contract → profile-launched implementer → exit-code gate → three blind review rounds → owner UAT rounds → PR-as-ready. Paseo is the transport; launch config resolves from Paseo agent profiles with hardcoded fallbacks. |
 | `skills/feedback-round` | Rapid feedback capture while the owner tests live: instant ack with ID + restatement, async enrichment by a persistent read-only scribe, append-only revisions, triaged close into fix batch / ideas / rulings. |
 
+## Requirements
+
+Built to run on **Paseo** for maximum orchestration — persistent subagents,
+agent profiles, finish/permission notifications. Every skill carries an
+explicit degradation ladder, so missing pieces cost persistence and tuning,
+never silent correctness shortcuts.
+
+- **Minimum:** `git` + `bash` for the install, and an agent that discovers
+  skills in `~/.agents/skills/` or `~/.claude/skills/` (Claude Code). That is
+  enough for `feedback-round`; `paseo-dev-loop` additionally needs an
+  independent reviewer — the `codex` CLI at minimum. With no independent
+  reviewer at all, the review loop stops by design rather than self-review.
+- **Optimal:** the Paseo daemon with `paseo/agent-profiles.json` merged and
+  both providers (claude, codex) available — subagents persist across turns,
+  roles resolve from tunable profiles, and review runs cross-vendor.
+
 ## Install (per device)
 
 ```bash

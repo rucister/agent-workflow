@@ -7,10 +7,60 @@ and only carry facts (gate commands, seeds, red lines) in their own agent docs.
 
 ## Skills
 
-| Skill | Purpose |
-|---|---|
-| `skills/paseo-dev-loop` | The execution pipeline for any agreed coded change: entry contract → profile-launched implementer → exit-code gate → three blind review rounds → owner UAT rounds → PR-as-ready. Paseo is the transport; launch config resolves from Paseo agent profiles with hardcoded fallbacks. |
-| `skills/feedback-round` | Rapid feedback capture while the owner tests live: instant ack with ID + restatement, async enrichment by a persistent read-only scribe, append-only revisions, triaged close into fix batch / ideas / rulings. |
+### `paseo-dev-loop` — the execution pipeline
+
+Any agreed coded change: build → exit-code gate → three blind review rounds →
+owner UAT → PR-as-ready. One orchestrator session drives; work is delegated to
+persistent subagents.
+
+```mermaid
+sequenceDiagram
+    actor Owner
+    participant O as Orchestrator
+    participant I as Implementer
+    participant R as Reviewer
+    Owner->>O: agreed plan
+    O->>I: build + gate
+    O->>R: review — 3 blind rounds
+    R-->>O: findings
+    O->>I: fix pass, re-gate
+    O->>Owner: UAT rounds A, B, C…
+    O->>Owner: open PR (PR = ready)
+    Owner->>O: "merge" — explicit ask only
+```
+
+| Role | What it does | Ideal tier (e.g., our profiles) |
+|---|---|---|
+| **Orchestrator** — the session you talk to | drives the loop: delegates, runs gates, triages plan forks, reports; never writes code | frontier + long context — Fable 5 [1m] |
+| **Implementer** — persistent subagent | builds the plan (TDD, incremental); stops and waits on plan forks | strongest coder — Opus 5 xhigh |
+| **Reviewer** — persistent subagent | reviews the branch diff blind, re-prompted each round | different vendor than implementer — GPT-5.6-Sol xhigh |
+| **Owner** | UAT, rulings, the merge call | human |
+
+Diffs touching auth or a declared red line also get an independent security
+pass as its own subagent (skill §4).
+
+### `feedback-round` — live testing capture
+
+The owner tests and talks; **capture never blocks, investigation never
+interrupts.**
+
+```mermaid
+sequenceDiagram
+    actor Owner
+    participant C as Capturer
+    participant S as Scribe (read-only)
+    Owner->>C: finding
+    C-->>Owner: A3 ✓ — restatement
+    C--)S: forward (async)
+    S--)C: enrichment
+    Owner->>C: close the round
+    C-->>Owner: fix batch · ideas · needs ruling
+```
+
+The capturer is the main session, sole writer of `.feedback/round-<X>.md`;
+the scribe is one persistent read-only subagent per round, deliberately a
+small fast tier (Scribe profile, Sonnet fallback) — speed is freshness, and
+low blast radius.
 
 ## Requirements
 

@@ -80,9 +80,14 @@ never silent correctness shortcuts.
 ## Install (per device)
 
 ```bash
-git clone <this-repo> ~/repos/agent-workflow
-bash ~/repos/agent-workflow/install.sh
+git clone https://github.com/rucister/agent-workflow.git
+bash agent-workflow/install.sh
 ```
+
+Clone anywhere permanent — the installer resolves its own location, so the
+symlinks point at wherever the working tree lives. Don't delete the clone
+afterwards (it *is* the live skill source); if you move it, re-run
+`install.sh` to re-point the links.
 
 The installer symlinks every skill into `~/.agents/skills/` (the cross-agent
 convention) and `~/.claude/skills/` (Claude Code discovery). The repo stays the

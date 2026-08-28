@@ -14,19 +14,13 @@ owner UAT → PR-as-ready. One orchestrator session drives; work is delegated to
 persistent subagents.
 
 ```mermaid
-sequenceDiagram
-    actor Owner
-    participant O as Orchestrator
-    participant I as Implementer
-    participant R as Reviewer
-    Owner->>O: agreed plan
-    O->>I: build + gate
-    O->>R: review — 3 blind rounds
-    R-->>O: findings
-    O->>I: fix pass, re-gate
-    O->>Owner: UAT rounds A, B, C…
-    O->>Owner: open PR (PR = ready)
-    Owner->>O: "merge" — explicit ask only
+flowchart LR
+    OWNER(["Owner<br/>human"]) -- "agreed plan · merge call" --> ORCH["Orchestrator<br/>the session you talk to<br/>e.g. Fable 5 [1m] xhigh"]
+    ORCH -- "UAT rounds · PR = ready" --> OWNER
+    ORCH -- "build · fix passes" --> IMPL["Implementer<br/>persistent coder subagent<br/>e.g. Opus 5 xhigh"]
+    IMPL -- "done · plan forks" --> ORCH
+    ORCH -- "branch diff · ×3 rounds" --> REV["Reviewer<br/>blind · other vendor<br/>e.g. GPT-5.6-Sol xhigh"]
+    REV -- "findings" --> ORCH
 ```
 
 | Role | What it does | Ideal tier (e.g., our profiles) |
@@ -37,7 +31,9 @@ sequenceDiagram
 | **Owner** | UAT, rulings, the merge call | human |
 
 Diffs touching auth or a declared red line also get an independent security
-pass as its own subagent (skill §4).
+pass as its own subagent (skill §4). Independent changes can run parallel
+loops — each with its own implementer and reviewer; within a single change
+there is one implementer.
 
 ### `feedback-round` — live testing capture
 
@@ -45,16 +41,12 @@ The owner tests and talks; **capture never blocks, investigation never
 interrupts.**
 
 ```mermaid
-sequenceDiagram
-    actor Owner
-    participant C as Capturer
-    participant S as Scribe (read-only)
-    Owner->>C: finding
-    C-->>Owner: A3 ✓ — restatement
-    C--)S: forward (async)
-    S--)C: enrichment
-    Owner->>C: close the round
-    C-->>Owner: fix batch · ideas · needs ruling
+flowchart LR
+    OWNER(["Owner<br/>testing live"]) -- "findings · revisions" --> CAP["Capturer<br/>the main session itself<br/>e.g. Fable 5"]
+    CAP -- "A3 ✓ instant ack" --> OWNER
+    CAP -. "forward (async)" .-> SCRIBE["Scribe<br/>read-only · small fast tier<br/>e.g. Sonnet 5"]
+    SCRIBE -. "enrichment" .-> CAP
+    CAP -- "sole writer" --> FILE[("round file")]
 ```
 
 The capturer is the main session, sole writer of `.feedback/round-<X>.md`;

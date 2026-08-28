@@ -38,6 +38,15 @@ Either way, **behavior travels in the launch prompt** — profiles carry launch 
 
 Inline carve-out: tasks so small that the handoff costs more than the work are done inline by the orchestrator. If a subagent already holds the relevant context, route follow-ups to it instead of working inline.
 
+## Workspace topology
+
+Decided by the delivery shape, which arrives with the plan — choosing it is planning work, not the loop's. **If the plan leaves the topology unclear, ask the owner before spawning anything — never fill the gap by inference.** Map shape to workspaces up front (mechanics: the `paseo` skill; without Paseo, the same topology holds as plain worktrees and branches):
+
+- **One PR (default):** one shared workspace = one worktree = one branch = the PR. The whole crew works in it, orchestrator session included. One writer on the tree at a time — implementer work is sequential, and the orchestrator runs no tree-touching commands while the implementer is active (read-only inspection is always fine). The reviewer works alongside: blind means blind to the implementer's conversation, not to the filesystem.
+- **Phased work, separate PRs:** one workspace per phase branch, each with its own implementer and review rounds. Phases merging into a feature/integration PR → the orchestrator holds the integration workspace (collecting merges is orchestration, not implementation). Phases merging directly to the default branch → the orchestrator needs no code workspace at all.
+
+Either way: at most one dev stack per checkout (the repo's env playbook is the binding), and a workspace is archived when its PR merges.
+
 ## The pipeline
 
 **1. Env** — bring up the project dev environment per the repo's env playbook (binding).

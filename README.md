@@ -25,11 +25,12 @@ never silent correctness shortcuts.
   independent reviewer — the `codex` CLI at minimum. With no independent
   reviewer at all, the review loop stops by design rather than self-review.
 - **Recommended:** the [`agent-skills`](https://github.com/addyosmani/agent-skills)
-  plugin (Addy Osmani) installed in Claude Code — the technique layer these
-  skills reference: `paseo-dev-loop`'s implementer skill packs and review
-  lenses resolve from it. Policy lives here, techniques live there
-  ("reference, never restate"); without the plugin, Claude-side agents fall
-  back to their built-in defaults.
+  collection (Addy Osmani) — the technique layer these skills reference:
+  `paseo-dev-loop`'s implementer skill packs and review lenses resolve from
+  it. Any install route works: the Claude Code plugin, or `npx skills add`
+  into the same `~/.agents/skills/` convention this repo's installer uses.
+  Policy lives here, techniques live there ("reference, never restate");
+  without them, Claude-side agents fall back to their built-in defaults.
 - **Optimal:** the Paseo daemon with `paseo/agent-profiles.json` merged and
   both providers (claude, codex) available — subagents persist across turns,
   roles resolve from tunable profiles, and review runs cross-vendor.

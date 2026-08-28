@@ -1,0 +1,46 @@
+# agent-workflow
+
+Device-level agent skills for my personal development workflow. These encode
+**policy and orchestration** — models, efforts, loop phases, decision rights —
+and deliberately live *outside* any project repo: repos stay workflow-agnostic
+and only carry facts (gate commands, seeds, red lines) in their own agent docs.
+
+## Skills
+
+| Skill | Purpose |
+|---|---|
+| `skills/paseo-dev-loop` | The execution pipeline for any agreed coded change: entry contract → profile-launched implementer → exit-code gate → three blind review rounds → owner UAT rounds → PR-as-ready. Paseo is the transport; launch config resolves from Paseo agent profiles with hardcoded fallbacks. |
+| `skills/feedback-round` | Rapid feedback capture while the owner tests live: instant ack with ID + restatement, async enrichment by a persistent read-only scribe, append-only revisions, triaged close into fix batch / ideas / rulings. |
+
+## Install (per device)
+
+```bash
+git clone <this-repo> ~/repos/agent-workflow
+bash ~/repos/agent-workflow/install.sh
+```
+
+The installer symlinks every skill into `~/.agents/skills/` (the cross-agent
+convention) and `~/.claude/skills/` (Claude Code discovery). The repo stays the
+source of truth: editing a live skill edits this working tree — commit and push
+from here, `git pull` elsewhere. Idempotent; safe to re-run after adding skills.
+
+## Paseo profiles
+
+`paseo/agent-profiles.json` is a reference copy of the `daemon.agentProfiles`
+array these skills resolve against (Implementer / Reviewer / Orchestrator, with
+"when to use" notes). On a new device, merge it into `~/.paseo/config.json`
+under `daemon.agentProfiles`, then `paseo daemon reload` (or restart). The
+skills degrade gracefully without it — hardcoded fallbacks carry the same
+values — but profiles are the tuning layer.
+
+## Authoring rules
+
+- **Reference, never restate.** Techniques live in the referenced skills
+  (agent-skills plugins, the `paseo` skill); these files carry only policy.
+  A section that starts teaching a technique is duplication — replace it with
+  the reference.
+- **Roles, not models.** Models appear in exactly two places: Paseo profiles
+  (tunable) and fallback tables (frozen safety net). Everywhere else speaks in
+  roles (implementer, reviewer, scribe).
+- **Repos own their facts.** Never add a project-specific command or path here;
+  the skills gather bindings from each repo's own agent docs.

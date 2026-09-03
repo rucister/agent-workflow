@@ -15,7 +15,7 @@ persistent subagents.
 
 ```mermaid
 flowchart LR
-    OWNER(["Owner<br/>human"]) -- "agreed plan · merge call" --> ORCH["Orchestrator<br/>the session you talk to<br/>e.g. Fable 5 [1m] xhigh"]
+    OWNER(["Owner<br/>human"]) -- "agreed plan · merge call" --> ORCH["Orchestrator<br/>the session you talk to<br/>e.g. Fable 5.1 [1m] xhigh"]
     ORCH -- "UAT rounds · PR = ready" --> OWNER
     ORCH -- "build · fix passes" --> IMPL["Implementer<br/>persistent coder subagent<br/>e.g. Opus 5 xhigh"]
     IMPL -- "done · plan forks" --> ORCH
@@ -25,7 +25,7 @@ flowchart LR
 
 | Role | What it does | Ideal tier (e.g., our profiles) |
 |---|---|---|
-| **Orchestrator** — the session you talk to | drives the loop: delegates, runs gates, triages plan forks, reports; never writes code | frontier + long context — Fable 5 [1m] |
+| **Orchestrator** — the session you talk to | drives the loop: delegates, runs gates, triages plan forks, reports; never writes code | frontier + long context — Fable 5.1 [1m] |
 | **Implementer** — persistent subagent | builds the plan (TDD, incremental); stops and waits on plan forks | strongest coder — Opus 5 xhigh |
 | **Reviewer** — persistent subagent | reviews the branch diff blind, re-prompted each round | different vendor than implementer — GPT-5.6-Sol xhigh |
 | **Owner** | UAT, rulings, the merge call | human |
@@ -42,7 +42,7 @@ interrupts.**
 
 ```mermaid
 flowchart LR
-    OWNER(["Owner<br/>testing live"]) -- "findings · revisions" --> CAP["Capturer<br/>the main session itself<br/>e.g. Fable 5"]
+    OWNER(["Owner<br/>testing live"]) -- "findings · revisions" --> CAP["Capturer<br/>the main session itself<br/>e.g. Fable 5.1"]
     CAP -- "A3 ✓ instant ack" --> OWNER
     CAP -. "forward (async)" .-> SCRIBE["Scribe<br/>read-only · small fast tier<br/>e.g. Sonnet 5"]
     SCRIBE -. "enrichment" .-> CAP

@@ -54,6 +54,19 @@ the scribe is one persistent read-only subagent per round, deliberately a
 small fast tier (Scribe profile, Sonnet fallback) — speed is freshness, and
 low blast radius.
 
+### `review-rounds` — the standard review flow
+
+The same blind, cross-vendor review `paseo-dev-loop` uses, runnable on its
+own: "review this branch". Standalone it reports; it fixes only when asked.
+
+```mermaid
+flowchart LR
+    OWNER(["Owner"]) -- "review this branch / diff / PR" --> ORCH["Orchestrator<br/>e.g. Fable 5.1"]
+    ORCH -- "diff + lens checklist · ×3 rounds" --> REV["Reviewer<br/>blind · other vendor<br/>e.g. GPT-5.6-Sol xhigh"]
+    REV -- "findings" --> ORCH
+    ORCH -- "report (fix only on ask)" --> OWNER
+```
+
 ## Requirements
 
 Built to run on **Paseo** for maximum orchestration — persistent subagents,
@@ -63,7 +76,7 @@ never silent correctness shortcuts.
 
 - **Minimum:** `git` + `bash` for the install, and an agent that discovers
   skills in `~/.agents/skills/` or `~/.claude/skills/` (Claude Code). That is
-  enough for `feedback-round`; `paseo-dev-loop` additionally needs an
+  enough for `feedback-round`; `paseo-dev-loop` and `review-rounds` need an
   independent reviewer — the `codex` CLI at minimum. With no independent
   reviewer at all, the review loop stops by design rather than self-review.
 - **Recommended:** the [`agent-skills`](https://github.com/addyosmani/agent-skills)

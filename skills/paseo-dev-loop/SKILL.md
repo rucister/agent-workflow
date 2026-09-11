@@ -1,13 +1,13 @@
 ---
 name: paseo-dev-loop
-description: The Paseo-orchestrated execution pipeline for any agreed coded change — entry contract, profile-launched implementer and persistent reviewer, exit-code gate, three review rounds, owner UAT rounds, PR-as-ready. Roles resolve from Paseo agent profiles with hardcoded fallbacks; bindings (gate commands, seeds, red lines) are gathered from each repo's own docs. Use when starting implementation of a planned change, spawning implementation or review agents, running review rounds, or shipping.
+description: The Paseo-orchestrated execution pipeline for any agreed coded change — entry contract, profile-launched implementer and persistent reviewer, exit-code gate, three review rounds, owner UAT rounds, PR-as-ready. Roles resolve from Paseo agent profiles with hardcoded fallbacks; bindings (gate commands, seeds, red lines) are gathered from each repo's own docs. Use when the owner says "implement this", "build the plan", "start the loop", "ship it", "open the PR", or when starting implementation of a planned change or spawning an implementer.
 ---
 
 # paseo-dev-loop — the execution pipeline
 
 The device-level engine for how agreed work gets built, reviewed, and shipped. It is **orchestration and policy only** — techniques live in the referenced skills. **Reference, never restate:** if a section here starts teaching how to do TDD, review, or simplification, that's duplication — replace it with the reference.
 
-**Planning is not part of this loop.** Ideation, specs, requirement interviews, and committees happen in interactive sessions before it (`agent-skills:idea-refine`, `agent-skills:interview-me`, `agent-skills:spec-driven-development`, `/paseo-committee`). The loop starts where decisions end.
+**Planning is not part of this loop.** Ideation, specs, requirement interviews, and committees happen in interactive sessions before it (`idea-refine`, `interview-me`, `spec-driven-development`, `paseo-committee`). The loop starts where decisions end.
 
 ## Bindings
 
@@ -51,13 +51,13 @@ Either way: at most one dev stack per checkout (the repo's env playbook is the b
 
 **1. Env** — bring up the project dev environment per the repo's env playbook (binding).
 
-**2. Implement** — spawn the implementer with the agreed plan and its skill pack: `agent-skills:incremental-implementation`, `agent-skills:test-driven-development`; `agent-skills:debugging-and-error-recovery` when tests fail; `agent-skills:frontend-ui-engineering` plus the repo's UI stack skills for UI work. Owner-reviewable scenarios need their seed scripts (binding) built here, not later.
+**2. Implement** — spawn the implementer with the agreed plan and its skill pack: `incremental-implementation`, `test-driven-development`; `debugging-and-error-recovery` when tests fail; `frontend-ui-engineering` plus the repo's UI stack skills for UI work. Owner-reviewable scenarios need their seed scripts (binding) built here, not later.
 
 **3. Gate (blocking)** — run the repo's gate commands (binding). When the repo registers them as Paseo workspace scripts (`paseo.json`), run them through the workspace-script tools — supervised lifecycle, exit codes visible to everyone; otherwise run them in the shell and capture `$?`. **Exit codes are the only verdict — never judge by a summary line.** Full/slow suites run async, never as a blocking gate. Red gate → back to 2.
 
-**4. Review loop (internal — before any PR)** — starts when the implementer declares closed and the gate is green. Run **`review-rounds`** with the branch as target and the implementer as fix owner: each round's findings become one fix pass (implementer) → re-gate (§3) → next round. That skill owns the reviewer (persistent, blind, cross-vendor), the lens checklist, the security pass, and the exit rule (three rounds standard, zero-findings closes early, high-stakes gets more).
+**4. Review loop (internal — before any PR)** — starts when the implementer declares closed and the gate is green. **Smoke first:** for owner-visible work, walk the seeded scenario with the Paseo browser tools before round 1 — a deliverable that does not run goes back to §2, not into review. Then run **`review-rounds`** with the branch as target, the agreed plan as the goal, and the implementer as fix owner: blocking findings → one fix pass → re-gate (§3) → next round; polish batched into one pass at the end. That skill owns the reviewer, the lens order, the finding classes, and the exit rule.
 
-**5. UAT rounds (owner-driven — still pre-PR)** — owner-visible work only; internal-only changes skip to 6. Before inviting the owner, walk the seeded scenario with the Paseo browser tools — broken basics never reach the owner. While the owner tests, capture their findings with the **`feedback-round`** skill — it owns intake, acks, revisions, and the round file; the rules below govern the round itself.
+**5. UAT rounds (owner-driven — still pre-PR)** — owner-visible work only; internal-only changes skip to 6. Re-walk the seeded scenario after the review loop's fix passes — broken basics never reach the owner. While the owner tests, capture their findings with the **`feedback-round`** skill — it owns intake, acks, revisions, and the round file; the rules below govern the round itself.
 
 - **Rounds are lettered and batched:** findings collect into round A, B, C…; fix the batch → re-gate → invite the next round.
 - **State between rounds belongs to the owner — never re-seed uninvited.** Re-seed when the owner asks, or when a fix invalidates the current state — and even then, flag it and get a go-ahead first. Seed scripts make reset cheap on demand, not mandatory.

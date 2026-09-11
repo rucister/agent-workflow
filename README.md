@@ -127,3 +127,7 @@ values — but profiles are the tuning layer.
   roles (implementer, reviewer, scribe).
 - **Repos own their facts.** Never add a project-specific command or path here;
   the skills gather bindings from each repo's own agent docs.
+- **Universal names.** Reference other skills by their bare, cross-agent name
+  (`code-review-and-quality`, `paseo-committee`) — never a Claude plugin
+  namespace (`agent-skills:…`), a slash form, or a persona name. These skills
+  run under any agent that reads `~/.agents/skills/`.

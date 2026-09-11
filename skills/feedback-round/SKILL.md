@@ -1,6 +1,6 @@
 ---
 name: feedback-round
-description: Capture the owner's feedback at conversation speed while they test live — instant ack with ID + restatement, async enrichment by a persistent scribe subagent, append-only revisions, triaged close. Use when the owner starts testing and drops rapid-fire findings, opens a UAT round (paseo-dev-loop §5), or says "new round" / "feedback round" / "start testing".
+description: Capture the owner's feedback at conversation speed while they test live — instant ack with ID + restatement, async enrichment by a persistent scribe subagent, append-only revisions, triaged close. Use when the owner says "I'm testing", "found a bug", "while testing…", "new round", "feedback round", "start testing", drops rapid-fire findings, or a UAT round opens (paseo-dev-loop §5).
 ---
 
 # feedback-round — rapid feedback capture during live testing

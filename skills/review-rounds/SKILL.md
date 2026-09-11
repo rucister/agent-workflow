@@ -9,8 +9,9 @@ Policy only; techniques live in the referenced skills. A review judges the deliv
 
 ## Inputs
 
-- **Target:** a branch (diff against its base), a raw diff, or a PR. Default: the current branch against its base.
+- **Target:** a complete deliverable (paseo-dev-loop §4 entry) — never a helper in isolation — as a branch (diff against its base), a raw diff, or a PR. Default: the current branch against its base.
 - **Goal — required:** the agreed plan, acceptance criteria, or ticket the target claims to deliver. Without one, ask the owner for a one-line statement of what the change should do. A review without the goal is a code-shape review, the failure this skill exists to prevent.
+- **Evidence record:** the orchestrator's boundary record (real / controlled / untested) travels with the brief, so the reviewer knows what was proven and what was supplied.
 - **Fix owner:** who receives findings. Inside paseo-dev-loop: the implementer (fix pass, then re-gate). Standalone: **report only** — nothing is fixed unless the owner asks (paseo-dev-loop entry contract).
 - **Bindings:** the repo's declared red lines and gate commands, from its own agent docs.
 
@@ -28,7 +29,7 @@ One persistent subagent, launched once from the **Reviewer** profile and re-prom
    5. **Tests as evidence only** — do they prove the acceptance criteria? Test style, naming, and structure are out of scope unless a test is wrong or missing.
    Every round opens with a **deliverable verdict**: delivers / partial (what is missing) / does not.
 2. **Security pass** when lens 3 applies: a separate subagent briefed with `security-and-hardening`, independent of the reviewer; its findings merge into the round.
-3. **Classify, then hand off.** `blocking` = deliverable gap, product correctness, security. `polish` = readability, architecture, simplification, test hygiene. Dedupe, blocking first. A fix pass is for blocking findings; polish accumulates into one fix pass at the end of the loop, or is deferred with the owner's ok. Re-gate (paseo-dev-loop §3) after every fix pass.
+3. **Classify, then hand off.** `blocking` = deliverable gap, product correctness, security. `polish` = readability, architecture, simplification, test hygiene. Dedupe, blocking first. A fix pass is for blocking findings; polish accumulates into one fix pass at the end of the loop, or is deferred with the owner's ok. Re-gate (paseo-dev-loop §3) after every fix pass. Every fix pass re-runs the evidence scenarios; a pass that breaks a working scenario is not done.
 
 ## Exit
 
@@ -38,7 +39,7 @@ One persistent subagent, launched once from the **Reviewer** profile and re-prom
 
 ## Reporting
 
-Per round: deliverable verdict, then findings by class with dispositions (fixed / deferred / disputed). At the end: rounds run, what closed the loop, polish deferred. Never report a round without the reviewer's actual output.
+Per round: deliverable verdict, then findings by class, each tagged `open` / `fixed` / `deferred` / `disputed` / `regressed` / `new` — a repair that breaks something else is a new finding, not a disposition. An accepted finding reopens only with concrete new evidence. At the end: rounds run, what closed the loop, polish deferred. Never report a round without the reviewer's actual output.
 
 ## Red flags
 

@@ -1,84 +1,72 @@
 ---
 name: paseo-dev-loop
-description: The Paseo-orchestrated execution pipeline for any agreed coded change — entry contract, profile-launched implementer and persistent reviewer, exit-code gate, three review rounds, owner UAT rounds, PR-as-ready. Roles resolve from Paseo agent profiles with hardcoded fallbacks; bindings (gate commands, seeds, red lines) are gathered from each repo's own docs. Use when the owner says "implement this", "build the plan", "start the loop", "ship it", "open the PR", or when starting implementation of a planned change or spawning an implementer.
+description: The Paseo-orchestrated execution loop for any agreed coded change — checks decide when it is done, not judgment: gate with executed counts, default-path evidence, a counterexample per acceptance clause, zero open blocking findings, PR-as-ready. Roles resolve from Paseo agent profiles with hardcoded fallbacks; bindings (gate commands, seeds, red lines) come from each repo's own docs. Use when the owner says "implement this", "build the plan", "start the loop", "ship it", "open the PR", or when starting implementation of a planned change or spawning an implementer.
 ---
 
-# paseo-dev-loop — the execution pipeline
+# paseo-dev-loop
 
-The device-level engine for how agreed work gets built, reviewed, and shipped. It is **orchestration and policy only** — techniques live in the referenced skills. **Reference, never restate:** if a section here starts teaching how to do TDD, review, or simplification, that's duplication — replace it with the reference.
+You are running a closed loop. The checks below decide when the work is done; no agent's judgment is the verifier. Policy only — techniques live in the referenced skills (reference, never restate). Planning happens before the loop (`idea-refine`, `interview-me`, `spec-driven-development`, `paseo-committee`); the loop starts where decisions end.
 
-**Planning is not part of this loop.** Ideation, specs, requirement interviews, and committees happen in interactive sessions before it (`idea-refine`, `interview-me`, `spec-driven-development`, `paseo-committee`). The loop starts where decisions end.
+## Contract
 
-## Bindings
+**Input:** an agreed plan with acceptance clauses, or a task trivial enough to skip one. No plan → route to planning; never plan here. **Deliverable:** the plan's outcome or an agreed vertical slice exercised by its real consumer (`incremental-implementation`). Helpers are commits, never milestones, never reviewed alone. **Bindings** (gate commands, seeds, env playbook, red lines) come from the repo's own agent docs; repos never reference this workflow.
 
-Each repo supplies the loop's specifics: gate commands, seed scripts, env playbook, declared red lines, repo gotchas. Gather them from the repo's own agent docs (AGENTS.md / CLAUDE.md — typically its verification and local-development sections); repos stay agnostic about this workflow and never need to reference it. If a repo documents no gate at all, propose one before running the loop.
+**Done when ALL pass** — recorded in the ledger:
 
-## Entry contract
+- [HARD] Gate green: every gate command exits 0 AND executed-case counts ≥ the last green gate; no required case skipped, filtered, or never run. *Prove it:* the ledger's gate table.
+- [HARD] Default path exercised: one success and the relevant failure scenarios through the real entry point (browser for UI, real calls for API/CLI); every boundary recorded real / controlled / untested. Supplied business decisions and controlled HTTP are never "real". *Prove it:* the boundary table.
+- [HARD] Every acceptance clause survived an executed counterexample (`review-rounds`). *Prove it:* the clause table, with the commit that carries each counterexample as a test.
+- [HARD] Open blocking findings = 0, and the reviewer of record is a different vendor than the implementer. *Prove it:* findings and roles tables.
+- [HARD] Diff stays inside the plan's named files, or the ledger records why not. *Prove it:* `git diff --stat` against the plan.
+- [JUDGMENT] Each commit names one change. *Judge:* the reviewer.
 
-Input: an agreed plan, spec, or ticket with acceptance criteria — or a task trivial enough not to need one. If a non-trivial ask arrives unplanned, stop and route it to a planning conversation first. Do not plan inside the loop. (Micro-planning — ordering the agreed work, choosing commit boundaries — is execution and stays inside.)
+Green means ready for the owner's review, never shipped.
 
-## Roles and transport
+## Roles
 
-The session running this loop is the **orchestrator**: it delegates, supervises, triages, and reports — it does not write the code. Work is delegated to **Paseo subagents**. The **`paseo` skill is the reference for all mechanics** — launching from profiles, follow-up prompts, workspace scripts, heartbeats, waiting/notifications; follow it rather than improvising tool calls. Do not use native background subagents for implementation or review — they die between turns; Paseo sessions persist, appear in the Subagents track, and can be re-prompted. While a subagent runs, don't poll it — rely on Paseo's finish/permission notifications and do other work.
+**Orchestrator** (this session): delegates, gates, triages, writes the ledger; never writes code. **Implementer:** one persistent Paseo subagent per change, Implementer profile. **Reviewer:** one persistent subagent per change, Reviewer profile, other vendor, blind to the implementer's conversation and never to the goal — `review-rounds` owns it. **Security:** a separate subagent briefed with `security-and-hardening` whenever the diff touches auth, untrusted input, or a declared red line. **Owner:** rulings, UAT, the merge call.
 
-**Launch resolution ladder (what this loop adds on top of the `paseo` skill).** Try each tier in order; whenever any tier below 1 fires, say so in the report — which tier, and why:
+Transport is Paseo; the `paseo` skill is the reference for every mechanic. Behavior travels in the launch prompt; profiles carry launch configuration only. Only the orchestrator spawns agents. Work smaller than its handoff is done inline. Parallel loops across changes are fine; within a change there is one implementer.
 
-1. **Profiles.** Pick by role: `Implementer` for code-writing delegation, `Reviewer` for review rounds — match by profile name or role words in the notes. The owner's profiles are the tuning layer: whatever they say wins over the defaults below.
-2. **No matching profile (or none configured).** `create_agent` with the hardcoded defaults from the table — it usually means this machine's profiles aren't set up yet.
-3. **Paseo unavailable entirely** (no Paseo tools in this session — unconfigured machine, headless run). Degrade to native **foreground** subagents for implementation (Claude, model `opus`, effort `xhigh` — the table's values still apply) and the `codex` CLI for review rounds (`codex exec … < /dev/null`, xhigh). Background native subagents stay forbidden; you lose persistence and the Subagents track, so keep delegations coarse-grained.
-4. **No independent reviewer available at all** (no Paseo, no `codex` CLI): stop the review loop and tell the owner. Never quietly substitute a same-vendor self-review — a skipped round is visible, a self-graded one isn't.
+**Launch ladder** — say which tier fired: 1 profiles by role → 2 the table below → 3 no Paseo: native *foreground* subagents for implementation, `codex exec … < /dev/null` for review → 4 no independent reviewer: stop and tell the owner; never self-review. A same-vendor review yields **provisional**, never accepted.
 
-| Role | Default launch (tiers 2–3) | Effort | Mode |
+| Role | Fallback (tiers 2–3) | Effort | Mode |
 |---|---|---|---|
 | Implementer | claude / `claude-opus-5` | xhigh | `auto` |
-| Reviewer | codex / `gpt-5.6-sol` | xhigh | `auto-review` (eligible approvals route to Codex's auto-reviewer instead of stalling the round) |
-| Search / exploration fan-out | small tier (Haiku / Sonnet) | — | — |
+| Reviewer | codex / `gpt-5.6-sol` | xhigh | `auto-review` |
 
-Either way, **behavior travels in the launch prompt** — profiles carry launch configuration only, never skills or instructions. The implementer's prompt names its skill pack (§2); the reviewer's prompt carries the lens checklist (§4).
+## Workspace
 
-Inline carve-out: tasks so small that the handoff costs more than the work are done inline by the orchestrator. If a subagent already holds the relevant context, route follow-ups to it instead of working inline.
+The delivery shape, decided in planning, decides the topology; unclear → ask the owner, never infer. **One PR:** one workspace = worktree = branch; the whole crew works in it; one writer on the tree at a time — the orchestrator is read-only while the implementer is active. **Phased PRs:** one workspace per phase; phases merging into an integration PR → the orchestrator holds the integration workspace; phases merging to the default branch → no orchestrator workspace. One dev stack per checkout (binding); archive a workspace when its PR merges.
 
-## Workspace topology
+## Ledger — state and trace
 
-Decided by the delivery shape, which arrives with the plan — choosing it is planning work, not the loop's. **If the plan leaves the topology unclear, ask the owner before spawning anything — never fill the gap by inference.** Map shape to workspaces up front (mechanics: the `paseo` skill; without Paseo, the same topology holds as plain worktrees and branches):
+`.loop/<branch>.md` in the worktree; the orchestrator is its only writer; excluded through `$(git rev-parse --git-common-dir)/info/exclude` unless the owner commits it. It opens with the done checks and their current pass/fail, then: roles with agent id, provider and effort per round; gate table; boundary table; clause table; findings (id · class · round · disposition · commit); decisions made on the owner's behalf; rulings; spend per round. Written at every phase boundary. A fresh session resumes the loop from it, from git, and from the agent ids it names. Agents are archived only after its final state is written. Reports quote it and never restate it.
 
-- **One PR (default):** one shared workspace = one worktree = one branch = the PR. The whole crew works in it, orchestrator session included. One writer on the tree at a time — implementer work is sequential, and the orchestrator runs no tree-touching commands while the implementer is active (read-only inspection is always fine). The reviewer works alongside: blind means blind to the implementer's conversation, not to the filesystem.
-- **Phased work, separate PRs:** one workspace per phase branch, each with its own implementer and review rounds. Phases merging into a feature/integration PR → the orchestrator holds the integration workspace (collecting merges is orchestration, not implementation). Phases merging directly to the default branch → the orchestrator needs no code workspace at all.
+## Loop
 
-Either way: at most one dev stack per checkout (the repo's env playbook is the binding), and a workspace is archived when its PR merges.
+1. **Env** up per the repo's playbook.
+2. **Build:** the implementer gets the plan and `incremental-implementation`, `test-driven-development`; `debugging-and-error-recovery` on failure; `frontend-ui-engineering` plus the repo's UI skills for UI work. Commit small. Seeds for owner scenarios are built here.
+3. **Gate** — HARD check 1. Red → 2.
+4. **Evidence** — HARD check 2. Fails → 2, never into review.
+5. **Review** — `review-rounds` with the branch, the plan, and the implementer as fix owner. Blocking findings → one fix pass → re-gate → next round. A fix pass that breaks a working scenario is reverted, not repaired. Polish is batched once at the end.
+6. **UAT** (owner-visible work): re-walk the seeds after fix passes; `feedback-round` captures; rounds lettered and batched; the owner owns state — never re-seed uninvited; no mutations under the owner's feet; rulings are settled.
+7. **Ship** when all checks pass: push, open the PR, start a CI heartbeat (`paseo` skill). PR means ready. Merge only on the owner's explicit ask in this conversation; never push to the default branch.
 
-## The pipeline
+## Stop and tripwires
 
-**1. Env** — bring up the project dev environment per the repo's env playbook (binding).
+Stop when all checks pass, OR the round budget is spent (3 review rounds) — report pass/fail per check and let the owner decide on more, OR a tripwire fires. **Tripwires** — stop, report, do not recover:
 
-**2. Implement** — spawn the implementer with the agreed plan and its skill pack: `incremental-implementation`, `test-driven-development`; `debugging-and-error-recovery` when tests fail; `frontend-ui-engineering` plus the repo's UI stack skills for UI work. Owner-reviewable scenarios need their seed scripts (binding) built here, not later. Commit boundaries are not delivery boundaries: commit small — test-first, helpers, infrastructure — but a **deliverable** is the plan's outcome or an agreed vertical slice exercised by its real consumer (`incremental-implementation`). Helper completion is never a milestone and never enters review.
+- A test deleted, skipped, or edited to pass; a timeout raised or a dependency substituted to pass a gate.
+- The diff grows round over round instead of shrinking toward green.
+- The same check fails 3 rounds under different fixes → name the doubtful assumption and measure the failing boundary (`debugging-and-error-recovery`) before any further edit.
+- Open blocking findings not decreasing for 2 rounds.
+- The next round would exceed the change's spend cap (set by the owner in the plan; none set → ask).
 
-**3. Gate (blocking)** — run the repo's gate commands (binding). When the repo registers them as Paseo workspace scripts (`paseo.json`), run them through the workspace-script tools — supervised lifecycle, exit codes visible to everyone; otherwise run them in the shell and capture `$?`. **A gate is green only when the exit code is 0 and every required suite reports its cases as executed.** A skipped, filtered, or never-run required case is red whatever the exit code says; compare executed counts with the last green gate, and an unexplained drop is red. Never judge by a summary line. Full/slow suites run async, never as a blocking gate. Red gate → back to 2.
+## Mid-flight forks
 
-**4. Review loop (internal — before any PR)** — starts when a **deliverable** is complete and the gate is green — never for a helper or a slice without its consumer. **Evidence first, every deliverable:** the orchestrator exercises the application's default path — one success scenario and the relevant failure scenarios — through the real entry point (browser tools for UI, real calls for API/CLI). Record each boundary as **real**, **controlled**, or **untested**; a test that supplies the business decision it claims to test proves nothing about the production path (`test-driven-development`: real over mocks), and controlled HTTP is never live-provider evidence. A deliverable that fails its default path goes back to §2, not into review. Then run **`review-rounds`** with the branch as target, the agreed plan as the goal, and the implementer as fix owner: blocking findings → one fix pass → re-gate (§3) → next round; polish batched into one pass at the end. That skill owns the reviewer, the lens order, the finding classes, and the exit rule.
-
-**5. UAT rounds (owner-driven — still pre-PR)** — owner-visible work only; internal-only changes skip to 6. Re-walk the seeded scenario after the review loop's fix passes — broken basics never reach the owner. While the owner tests, capture their findings with the **`feedback-round`** skill — it owns intake, acks, revisions, and the round file; the rules below govern the round itself.
-
-- **Rounds are lettered and batched:** findings collect into round A, B, C…; fix the batch → re-gate → invite the next round.
-- **State between rounds belongs to the owner — never re-seed uninvited.** Re-seed when the owner asks, or when a fix invalidates the current state — and even then, flag it and get a go-ahead first. Seed scripts make reset cheap on demand, not mandatory.
-- **Queue mode while the owner is testing:** no mutations to the running env under their feet. Batch fixes in an isolated worktree; land with one coordinated restart; re-seed only on the owner's call.
-- **Rulings are settled:** record decisions the owner makes during rounds; later rounds do not re-litigate them.
-
-**6. Ship** — only after the review loop (and UAT, when it applies) is closed: push, open the PR, create a CI heartbeat — the `paseo` skill's PR-babysitting use case ("keep checking this PR, fix new CI failures, report when all checks pass; stop after a bounded time") — and report: what changed, how it was verified, and decisions made on the owner's behalf. **An open PR means the work is ready** — never open one to collect feedback. **Merging is the owner's call:** execute a merge only when the owner explicitly asks for it in the current conversation — never uninvited, and never push to the default branch.
-
-## Mid-flight planning (escape hatch)
-
-When implementation uncovers something the plan didn't anticipate, the implementer never decides and never improvises: it stops the affected work, reports the fork to the orchestrator, and waits — its session stays alive, so waiting is cheap. The discussion happens at the orchestrator level:
-
-- **The orchestrator decides alone** when the deviation doesn't change the agreed outcome: implementation tactics, internal structure, which existing pattern to follow, test approach, small enabling refactors — anything reversible within the branch that the owner wouldn't notice at UAT.
-- **The owner decides** when it changes what was agreed: scope, user-visible behavior, schema or data meaning, security/privacy posture (a declared red line always qualifies), a large effort delta, or anything that conflicts with a prior ruling — rulings are settled, and only the owner unsettles them.
-- **Litmus test:** would the owner be surprised at UAT? If yes, it's theirs.
-- While waiting, the default is to wait; the orchestrator may explicitly release the implementer to continue clearly independent parts.
-- **Repair circuit breaker:** after three failed fixes to the same mechanism, stop editing, name the doubtful assumption, and measure the actual failing boundary (`debugging-and-error-recovery`) before another repair. Raising timeouts, skipping tests, or substituting dependencies to make a gate pass is a red gate, not a fix. Reversible tactics stay autonomous; scope conflicts escalate as above.
-- **Every mid-flight decision is recorded:** owner calls become rulings; orchestrator calls get listed in the UAT invite and ship report as "decisions made on your behalf" — autonomy stays trustworthy only if it's auditable.
+The implementer stops and waits. The orchestrator decides what does not change the agreed outcome: tactics, internal structure, test approach. The owner decides scope, user-visible behavior, data meaning, security posture, declared red lines, large effort deltas, and anything against a ruling. Litmus: would the owner be surprised at UAT? Every decision goes to the ledger; owner calls become rulings.
 
 ## Reporting
 
-Reports are the audit trail of autonomy: gate results as exit codes, review rounds and their dispositions, UAT round logs, decisions made on the owner's behalf. Never report a background launch (dev server, `codex exec`, a long suite) as running without verifying real progress first; background `codex exec` needs `< /dev/null`.
-
-Status words are precise: **implemented** = written; **verified** = observed on the default path, with the boundary record (real / controlled / untested) and known limits; **accepted** = review closed all blocking findings. Reports count deliverables, never helpers, commits, or passing tests. One current status per deliverable; superseded history is labeled superseded.
+Status words are precise: **implemented** = written; **verified** = observed on the default path, with the boundary record; **accepted** = all checks pass with a cross-vendor reviewer; **provisional** = same-vendor. Reports quote the ledger: checks, rounds with agent ids, spend, decisions made on the owner's behalf. Never report a background launch as running without verifying real progress.

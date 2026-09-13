@@ -9,9 +9,13 @@ and only carry facts (gate commands, seeds, red lines) in their own agent docs.
 
 ### `paseo-dev-loop` — the execution pipeline
 
-Any agreed coded change: build → exit-code gate → three blind review rounds →
-owner UAT → PR-as-ready. One orchestrator session drives; work is delegated to
-persistent subagents.
+Any agreed coded change: build → gate with executed counts → default-path
+evidence → a counterexample per acceptance clause → owner UAT → PR-as-ready.
+Checks decide when it is done, not judgment. One orchestrator session drives;
+work is delegated to persistent subagents.
+
+`implement-change` is the implementer's own loop; `review-rounds` the
+reviewer's. The orchestrator runs neither — it runs the checks between them.
 
 ```mermaid
 flowchart LR
@@ -19,21 +23,36 @@ flowchart LR
     ORCH -- "UAT rounds · PR = ready" --> OWNER
     ORCH -- "build · fix passes" --> IMPL["Implementer<br/>persistent coder subagent<br/>e.g. Opus 5 xhigh"]
     IMPL -- "done · plan forks" --> ORCH
-    ORCH -- "branch diff · ×3 rounds" --> REV["Reviewer<br/>blind · other vendor<br/>e.g. GPT-5.6-Sol xhigh"]
+    ORCH -- "diff + plan · counterexample per clause" --> REV["Reviewer<br/>blind · executes probes<br/>e.g. GPT-5.6-Sol xhigh"]
     REV -- "findings" --> ORCH
 ```
 
 | Role | What it does | Ideal tier (e.g., our profiles) |
 |---|---|---|
 | **Orchestrator** — the session you talk to | drives the loop: delegates, runs gates, triages plan forks, reports; never writes code | frontier + long context — Fable 5.1 [1m] |
-| **Implementer** — persistent subagent | builds the plan (TDD, incremental); stops and waits on plan forks | strongest coder — Opus 5 xhigh |
-| **Reviewer** — persistent subagent | reviews the branch diff blind, re-prompted each round | different vendor than implementer — GPT-5.6-Sol xhigh |
+| **Implementer** — persistent subagent | builds the plan in committed steps under `implement-change`; stops and waits on plan forks | strongest coder — Opus 5 xhigh |
+| **Reviewer** — persistent subagent | tries to break each acceptance clause with an executed counterexample; blind to the implementer's conversation | strong reasoner, a different vendor when available — GPT-5.6-Sol xhigh |
 | **Owner** | UAT, rulings, the merge call | human |
 
 Diffs touching auth or a declared red line also get an independent security
-pass as its own subagent (skill §4). Independent changes can run parallel
+pass as its own subagent. Independent changes can run parallel
 loops — each with its own implementer and reviewer; within a single change
 there is one implementer.
+
+### `implement-change` — the implementer's loop
+
+Build the plan's acceptance clauses in small committed steps: gate every step,
+revert rather than patch forward, stop on a fork instead of guessing. Its
+checklist is readiness, never the verdict, and its tripwires fire on countable
+signals — growth without a clause proven, tests becoming the deliverable, no
+measurable progress for two steps.
+
+```mermaid
+flowchart LR
+    ORCH(["Orchestrator"]) -- "plan · clauses · findings" --> IMPL["Implementer<br/>one committed step at a time<br/>e.g. Opus 5 xhigh"]
+    IMPL -- "gate red · revert the step" --> IMPL
+    IMPL -- "ready · forks · tripwires" --> ORCH
+```
 
 ### `feedback-round` — live testing capture
 
@@ -56,13 +75,15 @@ low blast radius.
 
 ### `review-rounds` — the standard review flow
 
-The same blind, cross-vendor review `paseo-dev-loop` uses, runnable on its
-own: "review this branch". Standalone it reports; it fixes only when asked.
+The same blind review `paseo-dev-loop` uses, runnable on its own: "review
+this branch". Every clause is judged by an executed counterexample, and a
+clause that cannot produce one is a finding against the plan. Standalone it
+reports; it fixes only when asked.
 
 ```mermaid
 flowchart LR
     OWNER(["Owner"]) -- "review this branch / diff / PR" --> ORCH["Orchestrator<br/>e.g. Fable 5.1"]
-    ORCH -- "diff + lens checklist · ×3 rounds" --> REV["Reviewer<br/>blind · other vendor<br/>e.g. GPT-5.6-Sol xhigh"]
+    ORCH -- "diff + plan · counterexample per clause" --> REV["Reviewer<br/>blind · executes probes<br/>e.g. GPT-5.6-Sol xhigh"]
     REV -- "findings" --> ORCH
     ORCH -- "report (fix only on ask)" --> OWNER
 ```
@@ -88,7 +109,8 @@ never silent correctness shortcuts.
   without them, Claude-side agents fall back to their built-in defaults.
 - **Optimal:** the Paseo daemon with `paseo/agent-profiles.json` merged and
   both providers (claude, codex) available — subagents persist across turns,
-  roles resolve from tunable profiles, and review runs cross-vendor.
+  roles resolve from tunable profiles, and the reviewer can run on a
+  different vendor than the implementer.
 
 ## Install (per device)
 

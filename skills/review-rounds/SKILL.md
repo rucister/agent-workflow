@@ -22,7 +22,7 @@ One persistent subagent, launched once from the **Reviewer** profile and re-prom
 ## A round
 
 1. **Brief = diff + goal + lens content, in this order.** Paste condensed lens content, not skill names — the reviewer may run under any provider and may not be able to load skills by name.
-   1. **Deliverable** — does the change do what the goal says? What is missing or different? What would the owner notice at UAT?
+   1. **Deliverable** — for each acceptance clause, the reviewer tries to break it: construct a counterexample and execute it against the real boundary (a real database, a real request, a real lock schedule). A clause survives only when its counterexample fails. Reading the code or re-running the existing suite is not a verdict on a clause.
    2. **Correctness of product code** — edge cases, error paths, state (`code-review-and-quality`, correctness axis).
    3. **Security** — only when the diff touches auth, untrusted input, or a declared red line; see step 2.
    4. **Readability and architecture** (`code-review-and-quality` remaining axes, `code-simplification`).
@@ -33,7 +33,7 @@ One persistent subagent, launched once from the **Reviewer** profile and re-prom
 
 ## Exit
 
-- **A round with no blocking findings closes the loop.** Polish never extends rounds.
+- **A round closes the loop when every clause survived its executed counterexamples and no blocking findings remain.** Polish never extends rounds.
 - **Three rounds is the standard budget**; high-stakes targets — declared red lines, auth/session code, schema migrations, large branches — get more.
 - Standalone: the review ends when the budget is spent or the owner stops it.
 
@@ -45,6 +45,7 @@ Per round: deliverable verdict, then findings by class, each tagged `open` / `fi
 
 - All findings in one round are test-file nits: the reviewer lost the goal — re-brief with the plan.
 - No deliverable verdict in a round: the brief carried skill names, not lens content.
+- A deliverable verdict with no executed counterexample per clause is a reading verdict; it does not close a round.
 
 ## Not this skill
 

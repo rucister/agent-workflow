@@ -1,6 +1,6 @@
 ---
 name: feedback-round
-description: Capture the owner's feedback at conversation speed while they test live — instant ack with ID + restatement, async enrichment by a persistent scribe subagent, append-only revisions, triaged close. Use when the owner says "I'm testing", "found a bug", "while testing…", "new round", "feedback round", "start testing", drops rapid-fire findings, or a UAT round opens (paseo-dev-loop §5).
+description: Capture the owner's feedback at conversation speed while they test live — instant ack with ID + restatement, async enrichment by a persistent scribe subagent, append-only revisions, triaged close. Use when the owner says "I'm testing", "found a bug", "while testing…", "new round", "feedback round", "start testing", drops rapid-fire findings, or a UAT round opens in paseo-dev-loop.
 ---
 
 # feedback-round — rapid feedback capture during live testing
@@ -11,7 +11,7 @@ The owner is testing; items arrive faster than they can be investigated. The con
 
 - One file per round: `.feedback/round-<X>.md` in the worktree. The file is the source of truth — a fresh session resumes the round from it.
 - Keep it out of the repo without touching the repo: ensure `.feedback/` is listed in `$(git rev-parse --git-common-dir)/info/exclude` (the local, uncommitted ignore). The owner commits a round log deliberately if they ever want it kept.
-- Rounds are lettered `A, B, C…` per effort (inside paseo-dev-loop §5, the UAT round letter *is* the round). Item IDs inherit the letter: `A1, A2…`.
+- Rounds are lettered `A, B, C…` per effort (inside paseo-dev-loop's UAT phase, the UAT round letter *is* the round). Item IDs inherit the letter: `A1, A2…`.
 
 ## Roles
 

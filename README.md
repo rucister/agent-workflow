@@ -88,6 +88,14 @@ flowchart LR
     ORCH -- "report (fix only on ask)" --> OWNER
 ```
 
+### `squash-rebase-merge` — the owner's merge call
+
+Invoked by the owner only, with a PR number and an optional shape (`one`,
+`topics`, `keep`): fold iteration commits into one commit per topic, rebase
+onto the latest base, force-push with lease, wait for green CI on that head,
+then rebase-merge pinned to it. Never a GitHub squash: main keeps the
+reviewed commits and their full messages.
+
 ## Requirements
 
 Built to run on **Paseo** for maximum orchestration — persistent subagents,

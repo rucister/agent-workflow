@@ -76,14 +76,20 @@ low blast radius.
 ### `review-rounds` — the standard review flow
 
 The same blind review `paseo-dev-loop` uses, runnable on its own: "review
-this branch". Every clause is judged by an executed counterexample, and a
-clause that cannot produce one is a finding against the plan. Standalone it
-reports; it fixes only when asked.
+this branch" or "review PR 123". Every clause is judged by an executed
+counterexample, and a clause that cannot produce one is a finding against
+the plan. With no plan, the orchestrator derives a few clauses from the PR's
+own issue and description, marks them as derived, and the reviewer tries to
+break them like any other. The first round also sweeps
+past the clauses with four questions that fit any change: how far a failure
+spreads, what the change leaves behind, what it assumes unchecked, and what
+it costs as it grows. Later rounds narrow to closing what it found.
+Standalone it reports; it fixes only when asked.
 
 ```mermaid
 flowchart LR
     OWNER(["Owner"]) -- "review this branch / diff / PR" --> ORCH["Orchestrator<br/>e.g. Fable 5.1"]
-    ORCH -- "diff + plan · counterexample per clause" --> REV["Reviewer<br/>blind · executes probes<br/>e.g. GPT-5.6-Sol xhigh"]
+    ORCH -- "diff + plan or derived clauses · counterexample per clause" --> REV["Reviewer<br/>blind · executes probes<br/>e.g. GPT-5.6-Sol xhigh"]
     REV -- "findings" --> ORCH
     ORCH -- "report (fix only on ask)" --> OWNER
 ```

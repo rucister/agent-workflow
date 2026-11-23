@@ -48,7 +48,7 @@ The delivery shape, decided in planning, decides the topology; unclear → ask t
 1. **Build:** spawn the implementer with the plan and `implement-change`; it owns its steps, its gate runs, its clause tests, and the seeds. Wait for its finish notification; never poll.
 2. **Gate** — HARD check 1, run by you: the implementer's gate is its revert signal and is self-reported, this run is the verdict. Red → 1.
 3. **Evidence** — HARD check 2. Fails → 1, never into review.
-4. **Review** — `review-rounds` with the branch, the plan, and the implementer as fix owner. Blocking findings → one fix pass → re-gate → next round. Polish is batched once at the end.
+4. **Review** — `review-rounds` with the branch, the plan, and the implementer as fix owner. Round 1 is broad, and later rounds narrow to closure. Blocking findings → one fix pass → re-gate → next round. Polish is batched once at the end.
 5. **UAT** (owner-visible work): re-walk the seeds after fix passes; `feedback-round` captures; rounds lettered and batched; the owner owns state — never re-seed uninvited; no mutations under the owner's feet; rulings are settled.
 6. **Ship** when all checks pass: push, open the PR, start a CI heartbeat (`paseo` skill). PR means ready. Merge only on the owner's explicit ask in this conversation; never push to the default branch.
 
